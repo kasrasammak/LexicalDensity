@@ -2,3 +2,4 @@
 run "npm install" to install dependencies
 
 run "npm start" to start server/app
+or run "node app" to start application

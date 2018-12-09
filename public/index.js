@@ -5,8 +5,24 @@ const text = document.getElementById("writtenText");
 
 const button = document.getElementById("showText");
 
+// const button2 = document.getElementById("ConsoleLog");
+
 //testObject will store the inputted text
 var testObject;
+
+// var nonLex2 = require('../models/index');
+
+// router.get('/', function(req, res, next){
+//     nonLex2.getNonLexItems(function(err, nonlex){
+//         if (err){
+//             res.send(err);
+//         }
+//          res.json(nonlex);
+//         console.log(nonlex);
+//     },10);
+// });
+
+
 
 var nonLex = [
     'to',
@@ -133,6 +149,9 @@ function calculateLexicalDensity(str) {
     return lexWords/totalWords
 }
 
+button.addEventListener('click', function(){
+    console.log(nonLex2);
+});
 //Sets inputted text into Test object and simultaneously evaluates the text
 button.addEventListener('click', function(){
     
