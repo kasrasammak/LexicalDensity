@@ -3,25 +3,48 @@ var router = express.Router();
 
 var NonLex = require('../models/index');
 
+var bodyParser = require('body-parser') 
+var urlEncodedParser = bodyParser.urlencoded({extended: false})
+
+
+//TEXT OBJECTS
 //testObject will store the inputted text
 var testObject;
 
+//text stores the inputted text
+var text = "";
+
+//LEXICAL DENSITY OBJECTS
+
+//for showing on the screen
+var obj = {
+    old: null,
+    ldarr: [],
+};
+
+
+//stores overall lexical density
 var objectData = {
     "data": {
         overall_ld: null
     }
 }
 
+//stores overall lexical density and 
+//individual sentence lexical densities
 var objectDataVerbose =  {
     "data": {
         sentence_ld: [],
         overall_ld: null
-    }
-    
+    }  
 }
 
+//placeholder to loop through the mongodb array
+//and plug into the regex object
 var se;
 
+
+//Fills respective Object Datas
 function fillObjectData(ld) {
     objectData =  {
         "data": {
@@ -45,6 +68,7 @@ function fillObjectDataVerbose(arr, ld) {
 function TotalWordCount(str) { 
     return str.split(" ").length;
   }
+
 //Counts Total Characters in a String
 function TotalCharCount(str) {
     return str.length;
@@ -81,30 +105,30 @@ function checkNonLex(str, nonLex) {
     return arrSum(a);
 }
 
-
+//Splits paragraphs into sentences and returns
+//sentences in an array
 function splitParagraphToSentences(str) {
-    return str.match( /[^\.!\?]+[\.!\?]+/g );
+    return str.match(/[^\.!\?]+[\.!\?]+/g);
 }
 
-//pass a string and data of non-lexical items and returns lexical density of the string
+//pass a string and data of non-lexical items and 
+//returns lexical density of the string
 function calculateLexicalDensity(str, nonLex) {
     var nonLexTotal = checkNonLex(str, nonLex);
     var totalWords = TotalWordCount(str);
     var lexWords = totalWords - nonLexTotal;
-    return lexWords/totalWords
+    return (lexWords/totalWords)
 }
-var text = "Whatever is in the food is in the food man. Lets not think too much about it. Okay thats the case for us nineties babies."
-//Pass Non-Lexical Density array from Mongo DB 
+
+
+//Pass Non-Lexical array from Mongo DB 
 //evaluates the Inputted Text, returns object with overall lexical density 
-//and array of each sentences lexical densities
+//and array of each sentences lexical densities, and prints these values
+//that were requested to be outputted to the console
 function MainEvent(nonLex){
-    console.log("It Worked!");
     
+    //Ignores case sensitivity of text by setting all to lower case
     testObject = text.toLocaleLowerCase();
-    
-    var totalWords = TotalWordCount(testObject);
-    var totalChars = TotalCharCount(testObject);
-    //Wrap in an if clause to make sure words stay within limit
 
     //Calculate Total Lexical Density
     var lexDensity = calculateLexicalDensity(testObject, nonLex);
@@ -113,68 +137,52 @@ function MainEvent(nonLex){
 
     //Calculate Lexical Density for Each Sentence
     var sentenceArray = splitParagraphToSentences(testObject);
-    console.log(sentenceArray);
     var ldarr = [];
-    sentenceArray.forEach(function(v, i){
-        var sld = calculateLexicalDensity(v, nonLex).toFixed(2);
-        ldarr[i] = Number(sld);  
+    let trim = sentenceArray.map(v => {return v.trim()});
+    console.log(trim)
+    trim.forEach(function(v, i){
+        var sld = calculateLexicalDensity(v, nonLex);
+        ldarr[i] = Number(sld.toFixed(2));  
     });
-    console.log(ldarr);
-
 
     //Assign respective densities to objects 
     var overall = fillObjectData(old);
     var verbose = fillObjectDataVerbose(ldarr, old);
 
-    //display results on screen and console
+    //print requested data in console
     console.log(overall);
     console.log(verbose);
 
-    //creates packaged object to return for sending to the UI
-    var obj = {
+    //packages requested data into an object to return
+    obj = {
         old: old,
-        ldarr: ldarr,
+        ldarr: ldarr
     }
-    return obj
+    return obj;
 };
 
 
-
-
-
-// router.get('/', function(req, res, next){
-//     res.render('index');
-// });
-
-
-// router.get('/', function(req, res, next){
-//     NonLex.getNonLexItems(function(err, items){
-//         if (err){
-//             res.send(err);
-//         }
-        
-        
-        
-        
-//         MainEvent();
-//         res.json(items);
-//         console.log(items);
-//     },10);
-// });
-
+//displays the ejs page
 router.get('/', function(req, res, next){
+    res.render('index');
+});
+
+//reads input data from a request and stores it in the text variable
+router.post('/posttext', urlEncodedParser, function(req, res, next){
+    console.log(req.body.text)
+    text = req.body.text;
+});
+
+//gets data from mongodb and passes it to MainEvent to analyze the text
+router.get('/getdb', function(req, res, next){
         NonLex.collection.distinct("data", function(err, results){
             if (err){
                 res.send(err);
             }
             MainEvent(results);
-            res.json(results)
-            console.log(results);
+            res.redirect('/');
         }) 
         });
-
-
-
 
 module.exports = router;
 
