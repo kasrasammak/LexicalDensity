@@ -7,12 +7,13 @@ var bodyParser = require('body-parser')
 var urlEncodedParser = bodyParser.urlencoded({extended: false})
 
 
+
 //TEXT OBJECTS
 //testObject will store the inputted text
 var testObject;
 
 //text stores the inputted text
-var text = "";
+var text = "Sample text.";
 
 //LEXICAL DENSITY OBJECTS
 
@@ -123,10 +124,37 @@ function calculateLexicalDensity(str, nonLex) {
 
 //Pass Non-Lexical array from Mongo DB 
 //evaluates the Inputted Text, returns object with overall lexical density 
-//and array of each sentences lexical densities, and prints these values
-//that were requested to be outputted to the console
+//and array of each sentences lexical densities, respectively, 
+// prints these values to the console
+function CalculateOverallLD(nonLex){
+
+    if (text === "" || null) {
+        text = "Sample text.";
+    }
+
+    //Ignores case sensitivity of text by setting all to lower case
+    testObject = text.toLocaleLowerCase();
+
+     //Calculate Total Lexical Density
+     var lexDensity = calculateLexicalDensity(testObject, nonLex);
+     var old;
+     old = Number(lexDensity.toFixed(2));
+
+    //Assign respective densities to objects 
+    var overall = fillObjectData(old);
+
+    //print requested data in console   
+    console.log(overall);
+
+    return overall;
+}
+
 function MainEvent(nonLex){
     
+    if (text === "") {
+        text = "Sample text.";
+    }
+
     //Ignores case sensitivity of text by setting all to lower case
     testObject = text.toLocaleLowerCase();
 
@@ -145,20 +173,13 @@ function MainEvent(nonLex){
         ldarr[i] = Number(sld.toFixed(2));  
     });
 
-    //Assign respective densities to objects 
-    var overall = fillObjectData(old);
+    //Assign densities to object
     var verbose = fillObjectDataVerbose(ldarr, old);
 
     //print requested data in console
-    console.log(overall);
     console.log(verbose);
 
-    //packages requested data into an object to return
-    obj = {
-        old: old,
-        ldarr: ldarr
-    }
-    return obj;
+    return verbose;
 };
 
 
@@ -171,18 +192,32 @@ router.get('/', function(req, res, next){
 router.post('/posttext', urlEncodedParser, function(req, res, next){
     console.log(req.body.text)
     text = req.body.text;
+        
+    
 });
 
-//gets data from mongodb and passes it to MainEvent to analyze the text
-router.get('/getdb', function(req, res, next){
-        NonLex.collection.distinct("data", function(err, results){
-            if (err){
-                res.send(err);
-            }
-            MainEvent(results);
-            res.redirect('/');
-        }) 
-        });
+//evaluates input data against data from mongodb and returns 
+//sentence_ld & overall_ld, prints it in console
+router.get('/verbose', function(req, res, next){
+    NonLex.collection.distinct("data", function(err, results){
+        if (err){
+            res.send(err);
+        }
+        MainEvent(results);
+    });
+}); 
+//evaluates input data against data from mongodb and returns 
+//overall_ld, prints it in console
+router.get('/complexity', function(req, res, next){
+    NonLex.collection.distinct("data", function(err, results){
+        if (err){
+            res.send(err);
+        }
+        CalculateOverallLD(results);
+        
+    });
+}); 
+
+
 
 module.exports = router;
-

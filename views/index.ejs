@@ -11,12 +11,15 @@
             class="text" 
             id="writtenText" 
             >
-        </textarea>
-        <input type="submit" name="posttext">
-    </form>
-    <form method="get" action="/getdb">
-        <input type="submit" name="getdb"> Get Results
-    </form>     
+        </textarea><br><br>
+        <input type="submit" name="posttext"> Input Text
+    </form><br><br>
+    <form method="get" action="/complexity">
+        <input type="submit" name="complex"> Complexity
+    </form><br><br>
+    <form method="get" action="/verbose">
+        <input type="submit" name="verbose"> Complexity Verbose
+    </form>       
 </div>
 
 <%- include('includes/footer') %>

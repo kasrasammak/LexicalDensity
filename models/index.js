@@ -6,4 +6,4 @@ var NonLexSchema = mongoose.Schema({
     },
 });
 
-const NonLex = module.exports = mongoose.model('Item', NonLexSchema);
+module.exports = mongoose.model('Item', NonLexSchema);
