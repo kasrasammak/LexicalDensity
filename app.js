@@ -7,7 +7,18 @@ var ejs = require('ejs');
 
 var path = require('path');
 
-var port = 3000;
+const port = 3000;
+
+const http = require('http');
+
+const hostname = '127.0.0.1';
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello World\n');
+});
+
 
 mongoose.connect('mongodb://localhost/mongoLex');
 var db = mongoose.connection;
@@ -38,7 +49,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 //Allows you to use static pages
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/page', routes)
+app.use('/', routes)
 
 app.get('/duh', function(req, res){
 	res.send('Hello World!');
@@ -70,6 +81,10 @@ app.get('/about', function(req, res){
 app.listen(port, function() {
     console.log('Server started on port '+port);
 });
+
+server.listen(port, hostname, () => {
+	console.log(`Server running at http://${hostname}:${port}/`);
+  });
 
 
 module.exports = app;
